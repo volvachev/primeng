@@ -925,6 +925,7 @@ export class Dropdown implements OnInit,AfterViewInit,AfterContentInit,AfterView
                 }
 
                 event.preventDefault();
+                event.stopPropagation();
 
             break;
 
@@ -957,6 +958,7 @@ export class Dropdown implements OnInit,AfterViewInit,AfterContentInit,AfterView
                 }
 
                 event.preventDefault();
+                event.stopPropagation();
             break;
 
             //space
