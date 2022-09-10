@@ -1,4 +1,18 @@
-import {NgModule,Component,Input,Output,EventEmitter,forwardRef,ChangeDetectorRef,ContentChild,TemplateRef,ChangeDetectionStrategy, ViewEncapsulation} from '@angular/core';
+import {
+    NgModule,
+    Component,
+    Input,
+    Output,
+    EventEmitter,
+    forwardRef,
+    ChangeDetectorRef,
+    ContentChild,
+    TemplateRef,
+    ChangeDetectionStrategy,
+    ViewEncapsulation,
+    OnChanges,
+    SimpleChanges
+} from '@angular/core';
 import {CommonModule} from '@angular/common';
 import {ObjectUtils} from 'primeng/utils';
 import {RippleModule} from 'primeng/ripple';
@@ -38,7 +52,7 @@ export const SELECTBUTTON_VALUE_ACCESSOR: any = {
         'class': 'p-element'
     }
 })
-export class SelectButton implements ControlValueAccessor {
+export class SelectButton implements ControlValueAccessor, OnChanges {
 
     @Input() options: any[];
 
@@ -75,6 +89,12 @@ export class SelectButton implements ControlValueAccessor {
     onModelTouched: Function = () => {};
 
     constructor(public cd: ChangeDetectorRef) {}
+
+    ngOnChanges({ multiple }: SimpleChanges): void {
+        if (multiple && !multiple?.firstChange) {
+            this.changeStructureValueByMode();
+        }
+    }
 
     getOptionLabel(option: any) {
         return this.optionLabel ? ObjectUtils.resolveFieldData(option, this.optionLabel) : (option.label != undefined ? option.label : option);
@@ -173,6 +193,32 @@ export class SelectButton implements ControlValueAccessor {
         }
 
         return selected;
+    }
+
+    private changeStructureValueByMode(): void {
+        if (this.multiple) {
+            if (!Array.isArray(this.value)) {
+                this.value = [this.value];
+                // Update value on next render, avoid ExpressionChangedAfterItHasBeenCheckedError
+                Promise.resolve().then(() => {
+                    this.onModelChange(this.value);
+                    this.onChange.emit({
+                        originalEvent: null,
+                        value: this.value
+                    });
+                });
+            }
+        } else if (Array.isArray(this.value)) {
+            this.value = null;
+            // Update value on next render, avoid ExpressionChangedAfterItHasBeenCheckedError
+            Promise.resolve().then(() => {
+                this.onModelChange(this.value);
+                this.onChange.emit({
+                    originalEvent: null,
+                    value: this.value
+                });
+            });
+        }
     }
 }
 
